@@ -3,7 +3,7 @@ import 'package:device_apps/device_apps.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:android_intent/android_intent.dart';
 import 'dart:convert';
-import './app_item.dart';
+import './app_list.dart';
 import './icon_cache.dart';
 import './log_stage.dart';
 
