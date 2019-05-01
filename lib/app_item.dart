@@ -3,10 +3,11 @@ import 'package:device_apps/device_apps.dart';
 import './fade_in_icon.dart';
 
 class AppItem extends StatefulWidget {
-  AppItem({@required this.apps, @required this.iconList});
-
   final apps;
   final iconList;
+
+  AppItem({Key key, @required this.apps, @required this.iconList})
+      : super(key: key);
 
   @override
   ItemState createState() => ItemState(apps: apps, iconList: iconList);
@@ -24,14 +25,15 @@ class ItemState extends State<AppItem> {
   }
 
   Widget _buildRow(pkgInfo, icon) {
+    print('_buildRow executed');
     return GestureDetector(
       onTap: () async {
         DeviceApps.openApp(pkgInfo['pkg']);
       },
       child: Container(
-        child: new Column(children: [
+        child: Column(mainAxisAlignment: MainAxisAlignment.end, children: [
           FadeInIcon(bytes: icon, id: pkgInfo['pkg']),
-          new Text(
+          Text(
             pkgInfo['title'],
             textAlign: TextAlign.center,
             style: new TextStyle(
@@ -54,7 +56,7 @@ class ItemState extends State<AppItem> {
         style: new TextStyle(color: Colors.yellowAccent),
       );
     }
-    return new GridView.builder(
+    return GridView.builder(
         shrinkWrap: true,
         gridDelegate:
             new SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 5),

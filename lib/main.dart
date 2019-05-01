@@ -143,8 +143,8 @@ class _MyAppState extends State<MyApp> {
       home: new Scaffold(
           body: OrientationBuilder(builder: (ctx, orientation) {
             var children = <Widget>[
-              new Expanded(child: Container(child: LogState(logs))),
-              new Expanded(child: AppItem(apps: apps, iconList: iconList))
+              Expanded(child: Container(child: LogState(logs))),
+              Expanded(child: AppItem(apps: apps, iconList: iconList))
             ];
             if (orientation == Orientation.portrait) {
               return new Column(
