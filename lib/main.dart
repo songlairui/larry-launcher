@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:device_apps/device_apps.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:android_intent/android_intent.dart';
-import 'package:file_cache/file_cache.dart';
 import 'dart:convert';
 import './app_item.dart';
+import './icon_cache.dart';
+import './log_stage.dart';
 
 void main() => runApp(new MyApp());
 
@@ -20,7 +21,8 @@ class _MyAppState extends State<MyApp> {
   List apps = [];
   Map iconPool = Map.from({});
   List iconList = [];
-  FileCache fileCache;
+  List<String> logs = <String>['~~~ 梦游天姥吟留别  ~~~ ', '天姥连天向天横'];
+  IconFileCache fileCache;
   var wallpaper;
 
   @override
@@ -32,9 +34,17 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+  Future<Map> _iconLoader(String pkgName, int forceCache) async {
+    print('加载 $pkgName 图标');
+    ApplicationWithIcon curApp = await DeviceApps.getApp(pkgName, true);
+    int ttl = 86400;
+    return {'ttl': ttl, 'bytes': curApp.icon};
+  }
+
   _initMyCache() async {
     if (fileCache == null) {
-      fileCache = await FileCache.fromDefault();
+      fileCache =
+          await IconFileCache.fromDefault(loader: _iconLoader, scan: true);
     }
     return fileCache;
   }
@@ -49,6 +59,7 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       this.apps.addAll(jsonApps);
     });
+    print('_initMyState');
     this._loadAllIcons();
   }
 
@@ -91,39 +102,17 @@ class _MyAppState extends State<MyApp> {
     return json;
   }
 
-  Future _loadIconByPkgName(pkgName) async {
-    print('加载 $pkgName 图标');
-    ApplicationWithIcon curApp = await DeviceApps.getApp(pkgName, true);
-    var cacheIcon = curApp.icon;
-    fileCache.store(
-        pkgName,
-        new CacheEntry(
-            url: pkgName, bytes: cacheIcon, ctime: new DateTime.now(), ttl: 1));
-    return cacheIcon;
-  }
-
-  Future _loadIconWhetherCache(pkgName) async {
-//    print('pkgName: $pkgName');
-    var cacheIcon = await fileCache.getBytes(pkgName);
-//    print('cacheIcon: $cacheIcon');
-    if (cacheIcon == null) {
-      cacheIcon = await _loadIconByPkgName(pkgName);
-    }
-    return cacheIcon;
-  }
-
   _loadAllIcons() async {
     List allIcons = new List(apps.length);
     List<Future> _futures = <Future>[];
 
-    Future _setMe(i, pkgName) {
-      return _loadIconWhetherCache(pkgName).then((r) {
-        allIcons[i] = r;
-      });
-    }
-
     apps.asMap().forEach((i, app) {
-      _futures.add(_setMe(i, app['pkg']));
+      _futures.add(fileCache.getBytes(app['pkg']).then((r) {
+        if (r == null) {
+          print('no icon ');
+        }
+        allIcons[i] = r;
+      }));
     });
 
     await Future.wait(_futures);
@@ -140,10 +129,6 @@ class _MyAppState extends State<MyApp> {
   _debug() async {
     await _initMyState();
     print('debug');
-    print(apps);
-    print(iconList);
-
-    await _loadAllIcons();
   }
 
   _clearAllApps() async {
@@ -158,7 +143,23 @@ class _MyAppState extends State<MyApp> {
     return new MaterialApp(
       title: 'AppList',
       home: new Scaffold(
-          body: AppItem(apps: apps, iconList: iconList),
+          body: OrientationBuilder(builder: (ctx, orientation) {
+            var children = <Widget>[
+              new Expanded(child: Container(child: LogState(logs))),
+              new Expanded(child: AppItem(apps: apps, iconList: iconList))
+            ];
+            if (orientation == Orientation.portrait) {
+              return new Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: children,
+              );
+            } else {
+              return new Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: children,
+              );
+            }
+          }),
           floatingActionButton: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisAlignment: MainAxisAlignment.end,

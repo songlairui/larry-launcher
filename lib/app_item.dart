@@ -30,19 +30,22 @@ class ItemState extends State<AppItem> {
       child: Container(
         child: new Column(children: [
           icon == null
-              ? new Text('no icon',
-                  style: new TextStyle(color: Colors.yellowAccent))
+              ? new Icon(
+                  Icons.ac_unit,
+                  size: 48,
+                  color: Colors.lightBlueAccent,
+                )
               : new Image.memory(
                   icon,
                   fit: BoxFit.scaleDown,
-                  width: 32,
+                  width: 48,
                 ),
           new Text(
             pkgInfo['title'],
+            textAlign: TextAlign.center,
             style: new TextStyle(
               color: Colors.white,
-              fontSize: 12.0,
-              fontWeight: FontWeight.w900,
+              fontSize: 10.0,
               fontFamily: "Georgia",
             ),
           ),
@@ -56,10 +59,12 @@ class ItemState extends State<AppItem> {
     if (apps == null || apps.length == 0) {
       return new Text(
         "waiting",
+        textAlign: TextAlign.center,
         style: new TextStyle(color: Colors.yellowAccent),
       );
     }
     return new GridView.builder(
+        shrinkWrap: true,
         gridDelegate:
             new SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 5),
         itemCount: apps.length,
@@ -71,17 +76,6 @@ class ItemState extends State<AppItem> {
           } catch (e) {}
           return _buildRow(app, icon);
         });
-//    return new GridView.count(
-//        crossAxisCount: 5,
-//        childAspectRatio: 0.9,
-//        children: new List.generate(apps.length, (i) {
-//          var app = apps[i];
-//          var icon;
-//          try {
-//            icon = iconList[i];
-//          } catch (e) {}
-//          return _buildRow(app, icon);
-//        }));
   }
 
   @override
