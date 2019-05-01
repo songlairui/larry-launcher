@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:device_apps/device_apps.dart';
+import './fade_in_icon.dart';
 
 class AppItem extends StatefulWidget {
   AppItem({@required this.apps, @required this.iconList});
@@ -29,17 +30,7 @@ class ItemState extends State<AppItem> {
       },
       child: Container(
         child: new Column(children: [
-          icon == null
-              ? new Icon(
-                  Icons.ac_unit,
-                  size: 48,
-                  color: Colors.lightBlueAccent,
-                )
-              : new Image.memory(
-                  icon,
-                  fit: BoxFit.scaleDown,
-                  width: 48,
-                ),
+          FadeInIcon(bytes: icon, id: pkgInfo['pkg']),
           new Text(
             pkgInfo['title'],
             textAlign: TextAlign.center,

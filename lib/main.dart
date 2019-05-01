@@ -104,6 +104,7 @@ class _MyAppState extends State<MyApp> {
 
   _loadAllIcons() async {
     List allIcons = new List(apps.length);
+    this.iconList.length = apps.length;
     List<Future> _futures = <Future>[];
 
     apps.asMap().forEach((i, app) {
@@ -111,18 +112,15 @@ class _MyAppState extends State<MyApp> {
         if (r == null) {
           print('no icon ');
         }
-        allIcons[i] = r;
+        setState(() {
+          this.iconList[i] = r;
+        });
       }));
     });
 
     await Future.wait(_futures);
     print('me');
 
-    setState(() {
-      this.iconList.removeRange(0, this.iconList.length);
-      this.iconList.addAll(allIcons);
-      print('add icon list');
-    });
     return allIcons;
   }
 
