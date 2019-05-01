@@ -20,16 +20,12 @@ class ItemState extends State<AppItem> {
   @override
   initState() {
     super.initState();
-    print('~~');
   }
 
   Widget _buildRow(pkgInfo, icon) {
     return GestureDetector(
       onTap: () async {
-        print('apps');
-        print(pkgInfo);
-        print(icon);
-//        DeviceApps.openApp(pkgInfo['pkg']);
+        DeviceApps.openApp(pkgInfo['pkg']);
       },
       child: Container(
         child: new Column(children: [
@@ -57,23 +53,35 @@ class ItemState extends State<AppItem> {
   }
 
   Widget _buildAppList() {
-    if (apps == null) {
+    if (apps == null || apps.length == 0) {
       return new Text(
         "waiting",
         style: new TextStyle(color: Colors.yellowAccent),
       );
     }
-    return new GridView.count(
-        crossAxisCount: 5,
-        childAspectRatio: 0.9,
-        children: new List.generate(apps.length, (i) {
-          var app = apps[i];
+    return new GridView.builder(
+        gridDelegate:
+            new SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 5),
+        itemCount: apps.length,
+        itemBuilder: (BuildContext ctx, int idx) {
+          var app = apps[idx];
           var icon;
           try {
-            icon = iconList[i];
+            icon = iconList[idx];
           } catch (e) {}
           return _buildRow(app, icon);
-        }));
+        });
+//    return new GridView.count(
+//        crossAxisCount: 5,
+//        childAspectRatio: 0.9,
+//        children: new List.generate(apps.length, (i) {
+//          var app = apps[i];
+//          var icon;
+//          try {
+//            icon = iconList[i];
+//          } catch (e) {}
+//          return _buildRow(app, icon);
+//        }));
   }
 
   @override

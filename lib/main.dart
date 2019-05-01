@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:device_apps/device_apps.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:android_intent/android_intent.dart';
+import 'package:file_cache/file_cache.dart';
 import 'dart:convert';
 import './app_item.dart';
 
@@ -19,6 +20,7 @@ class _MyAppState extends State<MyApp> {
   List apps = [];
   Map iconPool = Map.from({});
   List iconList = [];
+  FileCache fileCache;
   var wallpaper;
 
   @override
@@ -30,7 +32,15 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+  _initMyCache() async {
+    if (fileCache == null) {
+      fileCache = await FileCache.fromDefault();
+    }
+    return fileCache;
+  }
+
   _initMyState() async {
+    await this._initMyCache();
     var jsonApps = await _loadAllAppFromPref();
     if (jsonApps == null) {
       var allApps = await this._loadAllApps();
@@ -39,6 +49,7 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       this.apps.addAll(jsonApps);
     });
+    this._loadAllIcons();
   }
 
   _goMiHome() async {
@@ -50,23 +61,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   _operateList() async {
-    List apps = await this._loadAllApps();
-    Map _iconPool = Map.from({});
-    apps.forEach((app) {
-      print(app.appName);
-      try {
-        _iconPool[app.packageName] = app.icon;
-      } catch (err) {
-        print('no icon');
-        print(err);
-      }
-    });
-    setState(() {
-      print('set pool');
-      print(_iconPool);
-      iconPool = _iconPool;
-    });
-    print(iconPool);
+    print('_operateList');
   }
 
   _loadAllAppFromPref() async {
@@ -83,9 +78,7 @@ class _MyAppState extends State<MyApp> {
 
   _loadAllApps() async {
     List<dynamic> allApps = await DeviceApps.getInstalledApplications(
-        includeAppIcons: true,
-        includeSystemApps: true,
-        onlyAppsWithLaunchIntent: true);
+        includeSystemApps: true, onlyAppsWithLaunchIntent: true);
     return allApps;
   }
 
@@ -98,25 +91,65 @@ class _MyAppState extends State<MyApp> {
     return json;
   }
 
+  Future _loadIconByPkgName(pkgName) async {
+    print('加载 $pkgName 图标');
+    ApplicationWithIcon curApp = await DeviceApps.getApp(pkgName, true);
+    var cacheIcon = curApp.icon;
+    fileCache.store(
+        pkgName,
+        new CacheEntry(
+            url: pkgName, bytes: cacheIcon, ctime: new DateTime.now(), ttl: 1));
+    return cacheIcon;
+  }
+
+  Future _loadIconWhetherCache(pkgName) async {
+//    print('pkgName: $pkgName');
+    var cacheIcon = await fileCache.getBytes(pkgName);
+//    print('cacheIcon: $cacheIcon');
+    if (cacheIcon == null) {
+      cacheIcon = await _loadIconByPkgName(pkgName);
+    }
+    return cacheIcon;
+  }
+
+  _loadAllIcons() async {
+    List allIcons = new List(apps.length);
+    List<Future> _futures = <Future>[];
+
+    Future _setMe(i, pkgName) {
+      return _loadIconWhetherCache(pkgName).then((r) {
+        allIcons[i] = r;
+      });
+    }
+
+    apps.asMap().forEach((i, app) {
+      _futures.add(_setMe(i, app['pkg']));
+    });
+
+    await Future.wait(_futures);
+    print('me');
+
+    setState(() {
+      this.iconList.removeRange(0, this.iconList.length);
+      this.iconList.addAll(allIcons);
+      print('add icon list');
+    });
+    return allIcons;
+  }
+
   _debug() async {
     await _initMyState();
     print('debug');
     print(apps);
     print(iconList);
-    var _cc = apps.map((app) {
-      return iconPool[app['pkg']];
-    }).toList();
-    setState(() {
-      print('add icon list');
-      this.iconList.removeRange(0, this.iconList.length);
-      this.iconList.addAll(_cc);
-    });
+
+    await _loadAllIcons();
   }
 
   _clearAllApps() async {
-    apps.removeRange(0, apps.length);
     setState(() {
-      apps = apps;
+      iconList.removeRange(0, this.iconList.length);
+      apps.removeRange(0, apps.length);
     });
   }
 
