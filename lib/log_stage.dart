@@ -1,23 +1,35 @@
 import 'package:flutter/material.dart';
 
 class LogState extends StatelessWidget {
-  LogState(this.logs);
-
   final List<String> logs;
+  final double opacity;
+
+  LogState({this.logs, @required this.opacity});
 
   @override
   Widget build(BuildContext ctx) {
-    print('ctx $ctx');
     var children = <Widget>[];
 
-    children = logs.map((str) {
-      return new Text(str,
+    logs.forEach((str) {
+      children.add(new Text(str,
           textAlign: TextAlign.center,
           softWrap: true,
-          style: new TextStyle(color: Colors.yellowAccent));
-    }).toList();
+          style: new TextStyle(color: Colors.yellowAccent)));
+    });
+    children.add(AnimatedOpacity(
+      opacity: opacity,
+      duration: Duration(seconds: 1),
+      child: new Text(
+        '对此欲倒东南倾',
+        style: new TextStyle(color: Colors.white),
+      ),
+    ));
     return new Row(
-      children: <Widget>[Expanded(child: new Column(children: children))],
+      children: <Widget>[
+        Expanded(
+            child: new Column(
+                mainAxisAlignment: MainAxisAlignment.end, children: children))
+      ],
     );
   }
 }

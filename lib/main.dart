@@ -25,6 +25,8 @@ class _MyAppState extends State<MyApp> {
   IconFileCache fileCache;
   var wallpaper;
 
+  double opacityLevel = 1.0;
+
   @override
   initState() {
     super.initState();
@@ -73,6 +75,7 @@ class _MyAppState extends State<MyApp> {
 
   _operateList() async {
     print('_operateList');
+    _changeOpacity();
   }
 
   _loadAllAppFromPref() async {
@@ -110,10 +113,11 @@ class _MyAppState extends State<MyApp> {
     apps.asMap().forEach((i, app) {
       _futures.add(fileCache.getBytes(app['pkg']).then((r) {
         if (r == null) {
-          print('no icon ');
+          print('no icon');
         }
         setState(() {
-          this.iconList[i] = r;
+          app['icon'] = r;
+//          this.iconList[i] = r;
         });
       }));
     });
@@ -136,23 +140,34 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+  void _changeOpacity() {
+    setState(() {
+      opacityLevel = opacityLevel == 0 ? 1.0 : 0.0;
+    });
+  }
+
   @override
   Widget build(BuildContext ctx) {
-    return new MaterialApp(
+    return MaterialApp(
       title: 'AppList',
-      home: new Scaffold(
+      home: Scaffold(
           body: OrientationBuilder(builder: (ctx, orientation) {
             var children = <Widget>[
-              Expanded(child: Container(child: LogState(logs))),
-              Expanded(child: AppItem(apps: apps, iconList: iconList))
+              Expanded(
+                  child: Container(
+                      child: LogState(
+                logs: logs,
+                opacity: opacityLevel,
+              ))),
+              Expanded(child: AppItem(apps: apps))
             ];
             if (orientation == Orientation.portrait) {
-              return new Column(
+              return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: children,
               );
             } else {
-              return new Row(
+              return Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: children,
               );
@@ -162,30 +177,45 @@ class _MyAppState extends State<MyApp> {
               crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisAlignment: MainAxisAlignment.end,
               children: <Widget>[
-                FloatingActionButton(
-                  heroTag: '122',
-                  onPressed: _clearAllApps,
-                  tooltip: 'Remove',
-                  child: Icon(Icons.delete_outline),
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: 4, horizontal: 36),
+                  child: FloatingActionButton(
+                    heroTag: '122',
+                    onPressed: _clearAllApps,
+                    tooltip: 'Remove',
+                    child: Icon(Icons.delete_outline),
+                    mini: true,
+                  ),
                 ),
-                FloatingActionButton(
-                  heroTag: null,
-                  onPressed: _debug,
-                  tooltip: 'Debug',
-                  child: Icon(Icons.developer_board),
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: 4, horizontal: 38),
+                  child: FloatingActionButton(
+                    heroTag: null,
+                    onPressed: _debug,
+                    tooltip: 'Debug',
+                    child: Icon(Icons.developer_board),
+                    mini: true,
+                  ),
                 ),
-                FloatingActionButton(
-                  heroTag: null,
-                  onPressed: _operateList,
-                  tooltip: 'Reload',
-                  child: Icon(Icons.format_paint),
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: 4, horizontal: 40),
+                  child: FloatingActionButton(
+                    heroTag: null,
+                    onPressed: _operateList,
+                    tooltip: 'Reload',
+                    child: Icon(Icons.format_paint),
+                    mini: true,
+                  ),
                 ),
-                FloatingActionButton(
-                  heroTag: null,
-                  onPressed: _goMiHome,
-                  tooltip: 'MiHome',
-                  child: Icon(Icons.home),
-                )
+                Padding(
+                  padding: EdgeInsets.all(2.0),
+                  child: FloatingActionButton.extended(
+                      heroTag: null,
+                      onPressed: _goMiHome,
+                      tooltip: 'MiHome',
+                      icon: Icon(Icons.home),
+                      label: Text('系统桌面')),
+                ),
               ]),
           backgroundColor: Colors.black),
     );
