@@ -58,6 +58,7 @@ class _MyAppState extends State<MyApp> {
       var allApps = await this._loadAllApps();
       jsonApps = await this._storeAllAppToPref(allApps);
     }
+    this.apps.removeWhere((app) => true);
     setState(() {
       this.apps.addAll(jsonApps);
     });
@@ -149,75 +150,56 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext ctx) {
     return MaterialApp(
-      title: 'AppList',
-      home: Scaffold(
-          body: OrientationBuilder(builder: (ctx, orientation) {
-            var children = <Widget>[
-              Expanded(
-                  child: Container(
-                      child: LogState(
-                logs: logs,
-                opacity: opacityLevel,
-              ))),
-              Expanded(child: AppItem(apps: apps))
-            ];
-            if (orientation == Orientation.portrait) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: children,
-              );
-            } else {
-              return Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: children,
-              );
-            }
-          }),
-          floatingActionButton: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: <Widget>[
-                Padding(
-                  padding: EdgeInsets.symmetric(vertical: 4, horizontal: 36),
-                  child: FloatingActionButton(
-                    heroTag: '122',
-                    onPressed: _clearAllApps,
-                    tooltip: 'Remove',
-                    child: Icon(Icons.delete_outline),
-                    mini: true,
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(vertical: 4, horizontal: 38),
-                  child: FloatingActionButton(
-                    heroTag: null,
-                    onPressed: _debug,
-                    tooltip: 'Debug',
-                    child: Icon(Icons.developer_board),
-                    mini: true,
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(vertical: 4, horizontal: 40),
-                  child: FloatingActionButton(
-                    heroTag: null,
-                    onPressed: _operateList,
-                    tooltip: 'Reload',
-                    child: Icon(Icons.format_paint),
-                    mini: true,
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.all(2.0),
-                  child: FloatingActionButton.extended(
-                      heroTag: null,
-                      onPressed: _goMiHome,
-                      tooltip: 'MiHome',
-                      icon: Icon(Icons.home),
-                      label: Text('系统桌面')),
-                ),
-              ]),
-          backgroundColor: Colors.black),
-    );
+        title: 'AppList',
+        home: new WillPopScope(
+            child: Scaffold(
+                body: OrientationBuilder(builder: (ctx, orientation) {
+                  var children = <Widget>[
+                    Expanded(
+                        child: Container(
+                            child: LogState(
+                      logs: logs,
+                      opacity: opacityLevel,
+                    ))),
+                    Expanded(child: AppList(apps: apps))
+                  ];
+                  if (orientation == Orientation.portrait) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: children,
+                    );
+                  } else {
+                    return Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: children,
+                    );
+                  }
+                }),
+                floatingActionButton: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: <Widget>[
+                      Padding(
+                        padding:
+                            EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+                        child: GestureDetector(
+                          onLongPress: _initMyState,
+                          onPanUpdate: (DragUpdateDetails detail) {
+                            if (detail.globalPosition.dx < 280) {
+                              _goMiHome();
+                            }
+                          },
+                          child: Container(
+                            child: Icon(
+                              Icons.bubble_chart,
+                              color: Colors.white54,
+                              size: 48,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ]),
+                backgroundColor: Colors.black),
+            onWillPop: () async => false));
   }
 }

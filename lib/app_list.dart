@@ -1,48 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:device_apps/device_apps.dart';
-import './fade_in_icon.dart';
+import './app_item.dart';
 
-class AppItem extends StatefulWidget {
+class AppList extends StatefulWidget {
   final apps;
 
-  AppItem({Key key, @required this.apps}) : super(key: key);
+  AppList({Key key, @required this.apps}) : super(key: key);
 
   @override
-  ItemState createState() => ItemState();
+  _AppList createState() => _AppList();
 }
 
-class ItemState extends State<AppItem> {
+class _AppList extends State<AppList> {
   Widget _buildRow(pkgInfo) {
-    return GestureDetector(
-      onTap: () async {
-        DeviceApps.openApp(pkgInfo['pkg']);
-      },
-      child: Container(
-        child: Column(mainAxisAlignment: MainAxisAlignment.end, children: [
-          FadeInIcon(bytes: pkgInfo['icon']),
-          Expanded(
-              child: Row(
-            children: <Widget>[
-              Expanded(
-                  child: Column(
-                children: <Widget>[
-                  Text(
-                    pkgInfo['title'],
-                    textAlign: TextAlign.center,
-                    style: new TextStyle(
-                      color: Colors.white,
-                      fontSize: 10.0,
-                      fontFamily: "Georgia",
-                    ),
-                  ),
-                ],
-              )),
-            ],
-          )),
-        ]),
-        color: Colors.black26,
-      ),
-    );
+    return AppItem(pkgInfo: pkgInfo);
   }
 
   Widget _buildAppList(apps) {
